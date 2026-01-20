@@ -53,7 +53,7 @@ export default function ObservabilityPage() {
           projectId,
           "",
           (currentPage - 1) * logsPerPage,
-          logsPerPage
+          logsPerPage,
         ),
       ]);
       setStats(statsData);
@@ -386,7 +386,7 @@ export default function ObservabilityPage() {
                         {JSON.stringify(
                           selectedLog.content_moderation,
                           null,
-                          2
+                          2,
                         )}
                       </pre>
                     </div>

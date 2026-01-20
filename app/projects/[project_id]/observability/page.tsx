@@ -140,8 +140,8 @@ export default function ObservabilityPage() {
             <div className="text-sm font-medium text-gray-600">Avg Latency</div>
             <div className="text-3xl font-bold text-gray-900 mt-2">
               {stats?.avg_latency_ms
-                ? `${Math.round(stats.avg_latency_ms)}ms`
-                : "0ms"}
+                ? `${(stats.avg_latency_ms / 1000).toFixed(2)}s`
+                : "0s"}
             </div>
           </Card>
         </div>

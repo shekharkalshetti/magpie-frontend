@@ -1,5 +1,5 @@
 /**
- * API client for Triton backend
+ * API client for Magpie backend
  */
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -145,7 +145,7 @@ export async function getPolicy(projectId: string): Promise<Policy> {
     `${API_BASE_URL}/api/v1/policies/project/${projectId}`,
     {
       method: "GET",
-    }
+    },
   );
 }
 
@@ -154,7 +154,7 @@ export async function getPolicy(projectId: string): Promise<Policy> {
  */
 export async function updatePolicy(
   policyId: string,
-  data: PolicyUpdate
+  data: PolicyUpdate,
 ): Promise<Policy> {
   return apiFetch<Policy>(`${API_BASE_URL}/api/v1/policies/${policyId}`, {
     method: "PUT",
@@ -168,14 +168,14 @@ export async function updatePolicy(
 export async function toggleCategory(
   policyId: string,
   categoryId: string,
-  enabled: boolean
+  enabled: boolean,
 ): Promise<Policy> {
   return apiFetch<Policy>(
     `${API_BASE_URL}/api/v1/policies/${policyId}/toggle/category`,
     {
       method: "POST",
       body: JSON.stringify({ category_id: categoryId, enabled }),
-    }
+    },
   );
 }
 
@@ -186,7 +186,7 @@ export async function toggleSection(
   policyId: string,
   categoryId: string,
   sectionId: string,
-  enabled: boolean
+  enabled: boolean,
 ): Promise<Policy> {
   return apiFetch<Policy>(
     `${API_BASE_URL}/api/v1/policies/${policyId}/toggle/section`,
@@ -197,7 +197,7 @@ export async function toggleSection(
         section_id: sectionId,
         enabled,
       }),
-    }
+    },
   );
 }
 
@@ -209,7 +209,7 @@ export async function toggleOption(
   categoryId: string,
   sectionId: string,
   optionId: string,
-  enabled: boolean
+  enabled: boolean,
 ): Promise<Policy> {
   return apiFetch<Policy>(
     `${API_BASE_URL}/api/v1/policies/${policyId}/toggle/option`,
@@ -221,7 +221,7 @@ export async function toggleOption(
         option_id: optionId,
         enabled,
       }),
-    }
+    },
   );
 }
 
@@ -247,23 +247,71 @@ export interface Project {
 }
 
 export async function getProjects(): Promise<Project[]> {
-  const response = await fetch(`${API_BASE_URL}/api/v1/projects`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-  return handleResponse<Project[]>(response);
+  return apiFetch(`${API_BASE_URL}/api/v1/projects`);
 }
 
 export async function getProject(projectId: string): Promise<Project> {
-  const response = await fetch(`${API_BASE_URL}/api/v1/projects/${projectId}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
+  return apiFetch(`${API_BASE_URL}/api/v1/projects/${projectId}`);
+}
+
+export async function updateProject(
+  projectId: string,
+  data: { name?: string; description?: string },
+): Promise<Project> {
+  return apiFetch(`${API_BASE_URL}/api/v1/projects/${projectId}`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
   });
-  return handleResponse<Project>(response);
+}
+
+export async function deleteProject(projectId: string): Promise<void> {
+  return apiFetch(`${API_BASE_URL}/api/v1/projects/${projectId}`, {
+    method: "DELETE",
+  });
+}
+
+// ============================================================================
+// API Keys API
+// ============================================================================
+
+export interface ApiKey {
+  id: string;
+  project_id: string;
+  key_prefix: string;
+  name: string | null;
+  is_active: boolean;
+  created_at: string;
+  last_used_at: string | null;
+}
+
+export interface GeneratedApiKey extends ApiKey {
+  api_key: string; // Full plaintext key - only shown once
+}
+
+export async function getApiKeys(projectId: string): Promise<ApiKey[]> {
+  return apiFetch(`${API_BASE_URL}/api/v1/projects/${projectId}/api-keys`);
+}
+
+export async function createApiKey(
+  projectId: string,
+  name?: string,
+): Promise<GeneratedApiKey> {
+  return apiFetch(`${API_BASE_URL}/api/v1/projects/${projectId}/api-keys`, {
+    method: "POST",
+    body: JSON.stringify({ name }),
+  });
+}
+
+export async function deleteApiKey(
+  projectId: string,
+  keyId: string,
+): Promise<void> {
+  return apiFetch(
+    `${API_BASE_URL}/api/v1/projects/${projectId}/api-keys/${keyId}`,
+    {
+      method: "DELETE",
+    },
+  );
 }
 
 // ============================================================================
@@ -309,7 +357,7 @@ export interface ObservabilityStats {
 
 export async function getObservabilityStats(
   projectId: string,
-  apiKey: string
+  apiKey: string,
 ): Promise<ObservabilityStats> {
   const params = new URLSearchParams();
   if (projectId) {
@@ -326,7 +374,7 @@ export async function getExecutionLogs(
   projectId: string,
   apiKey: string,
   skip: number = 0,
-  limit: number = 10
+  limit: number = 10,
 ): Promise<ExecutionLog[]> {
   const params = new URLSearchParams({
     skip: skip.toString(),
@@ -337,13 +385,13 @@ export async function getExecutionLogs(
   }
 
   return apiFetch<ExecutionLog[]>(
-    `${API_BASE_URL}/api/v1/logs/?${params.toString()}`
+    `${API_BASE_URL}/api/v1/logs/?${params.toString()}`,
   );
 }
 
 export async function getExecutionLog(
   logId: string,
-  projectId?: string
+  projectId?: string,
 ): Promise<ExecutionLog> {
   const params = new URLSearchParams();
   if (projectId) {
@@ -353,7 +401,7 @@ export async function getExecutionLog(
   return apiFetch<ExecutionLog>(
     `${API_BASE_URL}/api/v1/logs/${logId}${
       queryString ? "?" + queryString : ""
-    }`
+    }`,
   );
 }
 
@@ -391,7 +439,7 @@ export async function getReviewQueueItems(
   projectId: string,
   status?: string,
   skip: number = 0,
-  limit: number = 10
+  limit: number = 10,
 ): Promise<ReviewQueueItem[]> {
   const params = new URLSearchParams({
     skip: skip.toString(),
@@ -407,31 +455,31 @@ export async function getReviewQueueItems(
     skip: number;
     limit: number;
   }>(
-    `${API_BASE_URL}/api/v1/projects/${projectId}/review-queue?${params.toString()}`
+    `${API_BASE_URL}/api/v1/projects/${projectId}/review-queue?${params.toString()}`,
   );
   return response.items;
 }
 
 export async function getReviewQueueStats(
-  projectId: string
+  projectId: string,
 ): Promise<ReviewQueueStats> {
   return apiFetch<ReviewQueueStats>(
-    `${API_BASE_URL}/api/v1/projects/${projectId}/review-queue/stats`
+    `${API_BASE_URL}/api/v1/projects/${projectId}/review-queue/stats`,
   );
 }
 
 export async function getReviewQueueItem(
-  itemId: string
+  itemId: string,
 ): Promise<ReviewQueueItem> {
   return apiFetch<ReviewQueueItem>(
-    `${API_BASE_URL}/api/v1/review-queue/${itemId}`
+    `${API_BASE_URL}/api/v1/review-queue/${itemId}`,
   );
 }
 
 export async function updateReviewQueueItem(
   itemId: string,
   status: "approved" | "rejected",
-  reviewNotes?: string
+  reviewNotes?: string,
 ): Promise<ReviewQueueItem> {
   return apiFetch<ReviewQueueItem>(
     `${API_BASE_URL}/api/v1/review-queue/${itemId}`,
@@ -441,7 +489,7 @@ export async function updateReviewQueueItem(
         status,
         review_notes: reviewNotes,
       }),
-    }
+    },
   );
 }
 
@@ -463,7 +511,7 @@ export async function getAuditLogs(
   skip: number = 0,
   limit: number = 20,
   action?: string,
-  userId?: string
+  userId?: string,
 ): Promise<AuditLog[]> {
   const params = new URLSearchParams({
     project_id: projectId,
@@ -535,53 +583,53 @@ export interface InvitationResponse {
 export async function inviteMember(
   projectId: string,
   email: string,
-  role: "admin" | "member" | "viewer" = "member"
+  role: "admin" | "member" | "viewer" = "member",
 ): Promise<InvitationResponse> {
   return apiFetch<InvitationResponse>(
     `${API_BASE_URL}/api/v1/projects/${projectId}/team/invite`,
     {
       method: "POST",
       body: JSON.stringify({ email, role }),
-    }
+    },
   );
 }
 
 export async function listTeamMembers(
-  projectId: string
+  projectId: string,
 ): Promise<TeamMember[]> {
   return apiFetch<TeamMember[]>(
-    `${API_BASE_URL}/api/v1/projects/${projectId}/team/members`
+    `${API_BASE_URL}/api/v1/projects/${projectId}/team/members`,
   );
 }
 
 export async function listPendingInvitations(
-  projectId: string
+  projectId: string,
 ): Promise<PendingInvitation[]> {
   return apiFetch<PendingInvitation[]>(
-    `${API_BASE_URL}/api/v1/projects/${projectId}/team/invitations`
+    `${API_BASE_URL}/api/v1/projects/${projectId}/team/invitations`,
   );
 }
 
 export async function removeMember(
   projectId: string,
-  userId: string
+  userId: string,
 ): Promise<void> {
   return apiFetch<void>(
     `${API_BASE_URL}/api/v1/projects/${projectId}/team/members/${userId}`,
     {
       method: "DELETE",
-    }
+    },
   );
 }
 
 export async function cancelInvitation(
   projectId: string,
-  invitationId: string
+  invitationId: string,
 ): Promise<void> {
   return apiFetch<void>(
     `${API_BASE_URL}/api/v1/projects/${projectId}/team/invitations/${invitationId}`,
     {
       method: "DELETE",
-    }
+    },
   );
 }

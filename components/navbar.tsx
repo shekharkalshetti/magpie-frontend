@@ -28,7 +28,7 @@ export function Navbar() {
       <nav className="border-b">
         <div className="flex h-16 items-center px-8">
           <div className="flex items-center gap-2">
-            <span className="text-xl font-semibold">Triton</span>
+            <span className="text-xl font-semibold">Magpie</span>
           </div>
           {isAuthenticated && pathname === "/projects" && (
             <div className="ml-auto flex items-center gap-4">

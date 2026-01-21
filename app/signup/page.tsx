@@ -88,7 +88,7 @@ export default function SignupPage() {
     } catch (err) {
       console.error("Signup error:", err);
       setError(
-        err instanceof Error ? err.message : "An unexpected error occurred"
+        err instanceof Error ? err.message : "An unexpected error occurred",
       );
     } finally {
       setIsLoading(false);
@@ -99,7 +99,7 @@ export default function SignupPage() {
     <div className="flex min-h-screen items-center justify-center bg-gray-50">
       <div className="w-full max-w-md">
         <div className="bg-white rounded-lg shadow-md p-8">
-          <h1 className="text-3xl font-bold text-center mb-2">Triton</h1>
+          <h1 className="text-3xl font-bold text-center mb-2">Magpie</h1>
           <p className="text-gray-600 text-center mb-8">
             {inviteToken ? "Join your team" : "Create your account"}
           </p>

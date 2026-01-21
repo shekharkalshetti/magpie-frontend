@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Triton - Content Moderation Platform",
+  title: "Magpie - Content Moderation Platform",
   description: "AI-powered content moderation and policy management",
 };
 

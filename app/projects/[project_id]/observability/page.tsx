@@ -336,7 +336,7 @@ export default function ObservabilityPage() {
                 {selectedLog.input && (
                   <div className="mb-4">
                     <span className="text-sm text-gray-600">Input:</span>
-                    <p className="text-sm bg-gray-50 p-3 rounded mt-1 break-words">
+                    <p className="text-sm bg-gray-50 p-3 rounded mt-1 wrap-break-word">
                       {selectedLog.input}
                     </p>
                   </div>
@@ -344,7 +344,7 @@ export default function ObservabilityPage() {
                 {selectedLog.output && (
                   <div>
                     <span className="text-sm text-gray-600">Output:</span>
-                    <p className="text-sm bg-gray-50 p-3 rounded mt-1 break-words">
+                    <p className="text-sm bg-gray-50 p-3 rounded mt-1 wrap-break-word">
                       {selectedLog.output}
                     </p>
                   </div>

@@ -633,3 +633,243 @@ export async function cancelInvitation(
     },
   );
 }
+
+// ============================================================================
+// Red Teaming API
+// ============================================================================
+
+export interface RedTeamTemplate {
+  id: string;
+  name: string;
+  category: string;
+  severity: string;
+  description: string | null;
+  template_text: string;
+  variables: Record<string, any> | null;
+  expected_behavior: Record<string, any> | null;
+  is_active: boolean;
+  is_custom: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface RedTeamCampaign {
+  id: string;
+  project_id: string;
+  name: string;
+  description: string | null;
+  attack_categories: string[];
+  target_model: string | null;
+  attacks_per_template: number;
+  fail_threshold_percent: number | null;
+  status: string;
+  total_attacks: number;
+  successful_attacks: number;
+  failed_attacks: number;
+  success_rate: number | null;
+  risk_level: string | null;
+  started_at: string | null;
+  completed_at: string | null;
+  error_message: string | null;
+  created_by_user_id: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface RedTeamAttack {
+  id: string;
+  campaign_id: string;
+  template_id: string | null;
+  execution_log_id: string | null;
+  project_id: string;
+  attack_type: string;
+  attack_name: string;
+  attack_prompt: string;
+  template_variables: Record<string, any> | null;
+  llm_response: string | null;
+  llm_model: string | null;
+  was_successful: boolean | null;
+  bypass_score: number | null;
+  analysis_notes: string | null;
+  flagged_policies: string[] | null;
+  review_queue_id: string | null;
+  severity: string;
+  execution_time_ms: number | null;
+  error_message: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface RedTeamStats {
+  total_campaigns: number;
+  active_campaigns: number;
+  total_attacks_run: number;
+  total_successful_attacks: number;
+  overall_success_rate: number;
+  risk_level: string;
+  vulnerabilities_by_category: Record<string, number>;
+  recent_campaigns: RedTeamCampaign[];
+}
+
+export interface CreateCampaignRequest {
+  name: string;
+  description?: string;
+  attack_categories: string[];
+  target_model?: string;
+  attacks_per_template?: number;
+  fail_threshold_percent?: number;
+}
+
+export interface QuickTestRequest {
+  template_id: string;
+  variables?: Record<string, string>;
+  target_model?: string;
+}
+
+export interface QuickTestResponse {
+  attack_id: string;
+  attack_name: string;
+  attack_type: string;
+  attack_prompt: string;
+  llm_response: string | null;
+  was_successful: boolean | null;
+  bypass_score: number | null;
+  analysis_notes: string | null;
+  severity: string;
+  execution_time_ms: number | null;
+  review_queue_id: string | null;
+}
+
+// Templates
+export async function getRedTeamTemplates(
+  category?: string,
+  projectId?: string,
+): Promise<RedTeamTemplate[]> {
+  const params = new URLSearchParams();
+  if (category) params.set("category", category);
+  if (projectId) params.set("project_id", projectId);
+
+  const url = params.toString()
+    ? `${API_BASE_URL}/api/v1/red-teaming/templates?${params.toString()}`
+    : `${API_BASE_URL}/api/v1/red-teaming/templates`;
+
+  return apiFetch<RedTeamTemplate[]>(url);
+}
+
+export async function getRedTeamTemplate(
+  templateId: string,
+): Promise<RedTeamTemplate> {
+  return apiFetch<RedTeamTemplate>(
+    `${API_BASE_URL}/api/v1/red-teaming/templates/${templateId}`,
+  );
+}
+
+// Campaigns
+export async function createRedTeamCampaign(
+  projectId: string,
+  data: CreateCampaignRequest,
+): Promise<RedTeamCampaign> {
+  return apiFetch<RedTeamCampaign>(
+    `${API_BASE_URL}/api/v1/projects/${projectId}/red-teaming/campaigns`,
+    {
+      method: "POST",
+      body: JSON.stringify(data),
+    },
+  );
+}
+
+export async function getRedTeamCampaigns(
+  projectId: string,
+  status?: string,
+  skip: number = 0,
+  limit: number = 50,
+): Promise<{ items: RedTeamCampaign[]; total: number }> {
+  const params = new URLSearchParams({
+    skip: skip.toString(),
+    limit: limit.toString(),
+  });
+  if (status) params.set("status_filter", status);
+
+  return apiFetch<{ items: RedTeamCampaign[]; total: number }>(
+    `${API_BASE_URL}/api/v1/projects/${projectId}/red-teaming/campaigns?${params.toString()}`,
+  );
+}
+
+export async function getRedTeamCampaign(
+  campaignId: string,
+): Promise<RedTeamCampaign> {
+  return apiFetch<RedTeamCampaign>(
+    `${API_BASE_URL}/api/v1/red-teaming/campaigns/${campaignId}`,
+  );
+}
+
+export async function startRedTeamCampaign(
+  campaignId: string,
+): Promise<RedTeamCampaign> {
+  return apiFetch<RedTeamCampaign>(
+    `${API_BASE_URL}/api/v1/red-teaming/campaigns/${campaignId}/start`,
+    {
+      method: "POST",
+    },
+  );
+}
+
+export async function cancelRedTeamCampaign(
+  campaignId: string,
+): Promise<RedTeamCampaign> {
+  return apiFetch<RedTeamCampaign>(
+    `${API_BASE_URL}/api/v1/red-teaming/campaigns/${campaignId}/cancel`,
+    {
+      method: "POST",
+    },
+  );
+}
+
+// Attacks
+export async function getCampaignAttacks(
+  campaignId: string,
+  successfulOnly: boolean = false,
+  skip: number = 0,
+  limit: number = 100,
+): Promise<{ items: RedTeamAttack[]; total: number }> {
+  const params = new URLSearchParams({
+    skip: skip.toString(),
+    limit: limit.toString(),
+    successful_only: successfulOnly.toString(),
+  });
+
+  return apiFetch<{ items: RedTeamAttack[]; total: number }>(
+    `${API_BASE_URL}/api/v1/red-teaming/campaigns/${campaignId}/attacks?${params.toString()}`,
+  );
+}
+
+export async function getRedTeamAttack(
+  attackId: string,
+): Promise<RedTeamAttack> {
+  return apiFetch<RedTeamAttack>(
+    `${API_BASE_URL}/api/v1/red-teaming/attacks/${attackId}`,
+  );
+}
+
+// Quick Test
+export async function runQuickTest(
+  projectId: string,
+  data: QuickTestRequest,
+): Promise<QuickTestResponse> {
+  return apiFetch<QuickTestResponse>(
+    `${API_BASE_URL}/api/v1/projects/${projectId}/red-teaming/quick-test`,
+    {
+      method: "POST",
+      body: JSON.stringify(data),
+    },
+  );
+}
+
+// Stats
+export async function getRedTeamStats(
+  projectId: string,
+): Promise<RedTeamStats> {
+  return apiFetch<RedTeamStats>(
+    `${API_BASE_URL}/api/v1/projects/${projectId}/red-teaming/stats`,
+  );
+}

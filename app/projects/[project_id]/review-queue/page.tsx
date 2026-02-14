@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -31,12 +31,13 @@ import {
 
 export default function ReviewQueuePage() {
   const params = useParams();
+  const router = useRouter();
   const projectId = params.project_id as string;
 
   const [items, setItems] = useState<ReviewQueueItem[]>([]);
   const [stats, setStats] = useState<ReviewQueueStats | null>(null);
   const [selectedItem, setSelectedItem] = useState<ReviewQueueItem | null>(
-    null
+    null,
   );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -58,7 +59,7 @@ export default function ReviewQueuePage() {
           projectId,
           activeStatus,
           (currentPage - 1) * itemsPerPage,
-          itemsPerPage
+          itemsPerPage,
         ),
         getReviewQueueStats(projectId),
       ]);
@@ -83,7 +84,7 @@ export default function ReviewQueuePage() {
 
   const handleStatusUpdate = async (
     status: "approved" | "rejected",
-    notes?: string
+    notes?: string,
   ) => {
     if (!selectedItem) return;
     try {
@@ -131,6 +132,12 @@ export default function ReviewQueuePage() {
       rejected: "destructive",
     };
     return <Badge variant={variants[status] || "default"}>{status}</Badge>;
+  };
+
+  const isRedTeamAttack = (item: ReviewQueueItem) => {
+    return (
+      item.violation_reasons && "red_team_attack_id" in item.violation_reasons
+    );
   };
 
   const totalPages = stats ? Math.ceil(stats.total / itemsPerPage) : 1;
@@ -232,7 +239,14 @@ export default function ReviewQueuePage() {
                       className="cursor-pointer hover:bg-gray-50"
                     >
                       <TableCell className="text-sm max-w-xs truncate">
-                        {item.content_text.substring(0, 50)}...
+                        <div className="flex items-center gap-2">
+                          <span>{item.content_text.substring(0, 50)}...</span>
+                          {isRedTeamAttack(item) && (
+                            <Badge variant="destructive" className="text-xs">
+                              Red Team
+                            </Badge>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell>
                         {getContentTypeBadge(item.content_type)}
@@ -367,6 +381,24 @@ export default function ReviewQueuePage() {
                     <div className="mt-2 p-3 bg-gray-50 rounded-md text-sm max-h-48 overflow-y-auto">
                       {JSON.stringify(selectedItem.violation_reasons, null, 2)}
                     </div>
+                    {isRedTeamAttack(selectedItem) && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="mt-2"
+                        onClick={() => {
+                          const attackId =
+                            selectedItem.violation_reasons?.red_team_attack_id;
+                          if (attackId) {
+                            router.push(
+                              `/projects/${projectId}/red-teaming/attacks/${attackId}`,
+                            );
+                          }
+                        }}
+                      >
+                        View Red Team Attack Details →
+                      </Button>
+                    )}
                   </div>
                 )}
 

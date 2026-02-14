@@ -18,6 +18,7 @@ const navigation = [
   { name: "Policy", href: "policy" },
   { name: "Observability", href: "observability" },
   { name: "Review Queue", href: "review-queue" },
+  { name: "Red Teaming", href: "red-teaming" },
   { name: "Audit Logs", href: "audit-logs" },
   { name: "Team", href: "team" },
   { name: "Settings", href: "settings" },
@@ -45,7 +46,7 @@ export default function ProjectLayout({
               Authorization: `Bearer ${token}`,
               "Content-Type": "application/json",
             },
-          }
+          },
         );
         if (response.ok) {
           const data = await response.json();
@@ -92,7 +93,7 @@ export default function ProjectLayout({
                         "group flex gap-x-3 rounded-md p-2 text-sm font-medium leading-6",
                         isActive
                           ? "bg-muted text-foreground"
-                          : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                          : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
                       )}
                     >
                       {item.name}

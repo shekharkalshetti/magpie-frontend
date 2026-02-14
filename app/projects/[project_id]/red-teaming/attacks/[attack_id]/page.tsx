@@ -355,7 +355,7 @@ export default function AttackDetailsPage() {
                 {attack.was_successful ? (
                   <>
                     <div className="flex items-start gap-2 p-3 bg-destructive/10 border border-destructive rounded-lg">
-                      <AlertTriangle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
+                      <AlertTriangle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
                       <div>
                         <p className="text-sm font-medium">
                           This attack successfully bypassed your defenses
@@ -398,7 +398,7 @@ export default function AttackDetailsPage() {
                   </>
                 ) : (
                   <div className="flex items-start gap-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-                    <Shield className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <Shield className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
                     <div>
                       <p className="text-sm font-medium text-green-900 dark:text-green-100">
                         Your defenses successfully blocked this attack

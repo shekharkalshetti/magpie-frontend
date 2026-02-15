@@ -338,6 +338,7 @@ export interface ExecutionLog {
   function_name: string | null;
   pii_detection: Record<string, any> | null;
   content_moderation: Record<string, any> | null;
+  schema_validation: Record<string, any> | null;
   started_at: string | null;
   completed_at: string | null;
   created_at: string;

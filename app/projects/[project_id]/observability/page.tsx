@@ -458,6 +458,44 @@ export default function ObservabilityPage() {
                 </div>
               )}
 
+              {/* Schema Guard */}
+              {selectedLog.schema_validation && (
+                <div>
+                  <h3 className="font-semibold mb-3">Schema Guard</h3>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">Status:</span>
+                      <Badge variant={selectedLog.schema_validation.valid ? "default" : "destructive"}>
+                        {selectedLog.schema_validation.valid ? "Valid" : "Invalid"}
+                      </Badge>
+                      {selectedLog.schema_validation.on_fail && (
+                        <Badge variant="outline">
+                          {selectedLog.schema_validation.on_fail === "block" ? "Blocked" : "Flagged"}
+                        </Badge>
+                      )}
+                    </div>
+                    {selectedLog.schema_validation.schema_name && (
+                      <div>
+                        <span className="text-sm text-muted-foreground">Schema:</span>
+                        <span className="text-sm font-mono ml-2">{selectedLog.schema_validation.schema_name}</span>
+                      </div>
+                    )}
+                    {selectedLog.schema_validation.errors && selectedLog.schema_validation.errors.length > 0 && (
+                      <div>
+                        <span className="text-sm text-muted-foreground">Errors:</span>
+                        <ul className="mt-1 space-y-1">
+                          {selectedLog.schema_validation.errors.map((error: string, i: number) => (
+                            <li key={i} className="text-xs text-destructive bg-destructive/10 px-2 py-1 rounded font-mono">
+                              {error}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {/* Error Info */}
               {selectedLog.error_message && (
                 <div className="bg-destructive/10 border border-destructive/20 rounded p-3">

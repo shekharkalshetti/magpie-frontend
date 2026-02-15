@@ -103,12 +103,12 @@ export default function ReviewQueuePage() {
   const getSeverityBadge = (severity: string) => {
     const variants: Record<
       string,
-      "default" | "secondary" | "destructive" | "outline"
+      "default" | "secondary" | "destructive" | "outline" | "critical" | "high" | "medium" | "low"
     > = {
-      low: "secondary",
-      medium: "default",
-      high: "destructive",
-      critical: "destructive",
+      low: "low",
+      medium: "medium",
+      high: "high",
+      critical: "critical",
     };
     return <Badge variant={variants[severity] || "default"}>{severity}</Badge>;
   };
@@ -154,36 +154,36 @@ export default function ReviewQueuePage() {
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card className="p-4">
-            <div className="text-sm font-medium text-gray-600">Total Items</div>
-            <div className="text-2xl font-bold text-gray-900 mt-2">
+            <div className="text-sm font-medium text-muted-foreground">Total Items</div>
+            <div className="text-2xl font-bold text-foreground mt-2">
               {stats?.total || 0}
             </div>
           </Card>
 
           <Card className="p-4">
-            <div className="text-sm font-medium text-gray-600">Pending</div>
-            <div className="text-2xl font-bold text-gray-900 mt-2">
+            <div className="text-sm font-medium text-muted-foreground">Pending</div>
+            <div className="text-2xl font-bold text-foreground mt-2">
               {stats?.pending || 0}
             </div>
           </Card>
 
           <Card className="p-4">
-            <div className="text-sm font-medium text-gray-600">Approved</div>
-            <div className="text-2xl font-bold text-gray-900 mt-2">
+            <div className="text-sm font-medium text-muted-foreground">Approved</div>
+            <div className="text-2xl font-bold text-foreground mt-2">
               {stats?.approved || 0}
             </div>
           </Card>
 
           <Card className="p-4">
-            <div className="text-sm font-medium text-gray-600">Rejected</div>
-            <div className="text-2xl font-bold text-gray-900 mt-2">
+            <div className="text-sm font-medium text-muted-foreground">Rejected</div>
+            <div className="text-2xl font-bold text-foreground mt-2">
               {stats?.rejected || 0}
             </div>
           </Card>
         </div>
 
         {/* Status Tabs */}
-        <div className="flex gap-2 border-b">
+        <div className="flex gap-2 border-b border-border">
           {statuses.map((status) => (
             <button
               key={status}
@@ -193,8 +193,8 @@ export default function ReviewQueuePage() {
               }}
               className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
                 activeStatus === status
-                  ? "border-blue-500 text-blue-600"
-                  : "border-transparent text-gray-600 hover:text-gray-900"
+                  ? "border-foreground text-foreground"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
               }`}
             >
               {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -206,9 +206,9 @@ export default function ReviewQueuePage() {
       {/* Review Queue Table */}
       <Card className="p-6">
         {loading ? (
-          <div className="text-center py-8 text-gray-500">Loading items...</div>
+          <div className="text-center py-8 text-muted-foreground">Loading items...</div>
         ) : items.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
+          <div className="text-center py-8 text-muted-foreground">
             No {activeStatus} items found
           </div>
         ) : (
@@ -229,7 +229,7 @@ export default function ReviewQueuePage() {
                   {items.map((item) => (
                     <TableRow
                       key={item.id}
-                      className="cursor-pointer hover:bg-gray-50"
+                      className="cursor-pointer hover:bg-muted/50"
                     >
                       <TableCell className="text-sm max-w-xs truncate">
                         {item.content_text.substring(0, 50)}...
@@ -259,7 +259,7 @@ export default function ReviewQueuePage() {
 
             {/* Pagination */}
             <div className="flex items-center justify-between mt-6">
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-muted-foreground">
                 Page {currentPage} of {totalPages}
               </div>
               <div className="flex gap-2">
@@ -297,7 +297,7 @@ export default function ReviewQueuePage() {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-600">
+                  <label className="text-sm font-medium text-muted-foreground">
                     Content Type
                   </label>
                   <div className="mt-1">
@@ -306,7 +306,7 @@ export default function ReviewQueuePage() {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-gray-600">
+                  <label className="text-sm font-medium text-muted-foreground">
                     Severity
                   </label>
                   <div className="mt-1">
@@ -315,7 +315,7 @@ export default function ReviewQueuePage() {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-gray-600">
+                  <label className="text-sm font-medium text-muted-foreground">
                     Status
                   </label>
                   <div className="mt-1">
@@ -324,7 +324,7 @@ export default function ReviewQueuePage() {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-gray-600">
+                  <label className="text-sm font-medium text-muted-foreground">
                     Created At
                   </label>
                   <div className="text-sm mt-1">
@@ -334,10 +334,10 @@ export default function ReviewQueuePage() {
               </div>
 
               <div>
-                <label className="text-sm font-medium text-gray-600">
+                <label className="text-sm font-medium text-muted-foreground">
                   Content
                 </label>
-                <div className="mt-2 p-3 bg-gray-50 rounded-md text-sm whitespace-pre-wrap max-h-64 overflow-y-auto">
+                <div className="mt-2 p-3 bg-muted rounded-md text-sm whitespace-pre-wrap max-h-64 overflow-y-auto">
                   {selectedItem.content_text}
                 </div>
               </div>
@@ -345,7 +345,7 @@ export default function ReviewQueuePage() {
               {selectedItem.flagged_policies &&
                 selectedItem.flagged_policies.length > 0 && (
                   <div>
-                    <label className="text-sm font-medium text-gray-600">
+                    <label className="text-sm font-medium text-muted-foreground">
                       Flagged Policies
                     </label>
                     <div className="mt-2 flex flex-wrap gap-2">
@@ -361,10 +361,10 @@ export default function ReviewQueuePage() {
               {selectedItem.violation_reasons &&
                 Object.keys(selectedItem.violation_reasons).length > 0 && (
                   <div>
-                    <label className="text-sm font-medium text-gray-600">
+                    <label className="text-sm font-medium text-muted-foreground">
                       Violation Reasons
                     </label>
-                    <div className="mt-2 p-3 bg-gray-50 rounded-md text-sm max-h-48 overflow-y-auto">
+                    <div className="mt-2 p-3 bg-muted rounded-md text-sm max-h-48 overflow-y-auto">
                       {JSON.stringify(selectedItem.violation_reasons, null, 2)}
                     </div>
                   </div>
@@ -372,7 +372,7 @@ export default function ReviewQueuePage() {
 
               {selectedItem.review_notes && (
                 <div>
-                  <label className="text-sm font-medium text-gray-600">
+                  <label className="text-sm font-medium text-muted-foreground">
                     Review Notes
                   </label>
                   <div className="text-sm mt-1">

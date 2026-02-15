@@ -375,6 +375,8 @@ export async function getExecutionLogs(
   apiKey: string,
   skip: number = 0,
   limit: number = 10,
+  customKey?: string,
+  customValue?: string,
 ): Promise<ExecutionLog[]> {
   const params = new URLSearchParams({
     skip: skip.toString(),
@@ -382,6 +384,10 @@ export async function getExecutionLogs(
   });
   if (projectId) {
     params.set("project_id", projectId);
+  }
+  if (customKey && customValue !== undefined) {
+    params.set("custom_key", customKey);
+    params.set("custom_value", customValue);
   }
 
   return apiFetch<ExecutionLog[]>(

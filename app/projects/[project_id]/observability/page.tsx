@@ -19,6 +19,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import {
   getObservabilityStats,
   getExecutionLogs,
@@ -39,14 +40,19 @@ export default function ObservabilityPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const logsPerPage = 10;
 
+  // Custom data filter state
+  const [filterKey, setFilterKey] = useState("");
+  const [filterValue, setFilterValue] = useState("");
+  const [activeFilterKey, setActiveFilterKey] = useState("");
+  const [activeFilterValue, setActiveFilterValue] = useState("");
+
   useEffect(() => {
     loadData();
-  }, [projectId, currentPage]);
+  }, [projectId, currentPage, activeFilterKey, activeFilterValue]);
 
   const loadData = async () => {
     try {
       setLoading(true);
-      // Pass empty string for apiKey parameter (will use JWT instead)
       const [statsData, logsData] = await Promise.all([
         getObservabilityStats(projectId, ""),
         getExecutionLogs(
@@ -54,6 +60,8 @@ export default function ObservabilityPage() {
           "",
           (currentPage - 1) * logsPerPage,
           logsPerPage,
+          activeFilterKey || undefined,
+          activeFilterValue || undefined,
         ),
       ]);
       setStats(statsData);
@@ -63,6 +71,22 @@ export default function ObservabilityPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleApplyFilter = () => {
+    if (filterKey.trim() && filterValue.trim()) {
+      setActiveFilterKey(filterKey.trim());
+      setActiveFilterValue(filterValue.trim());
+      setCurrentPage(1);
+    }
+  };
+
+  const handleClearFilter = () => {
+    setFilterKey("");
+    setFilterValue("");
+    setActiveFilterKey("");
+    setActiveFilterValue("");
+    setCurrentPage(1);
   };
 
   const handleLogClick = async (log: ExecutionLog) => {
@@ -103,42 +127,41 @@ export default function ObservabilityPage() {
       <div className="flex flex-col gap-5">
         <div>
           <h1 className="text-3xl font-bold">Observability</h1>
-          <p className="mt-2 text-muted-foreground max-w-2xl">
-            Track and analyze all LLM conversations with detailed metrics for
-            performance, cost, and quality.
+          <p className="mt-2 text-muted-foreground">
+            Monitor LLM performance, cost, and quality.
           </p>
         </div>
 
         {/* KPI Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card className="p-6">
-            <div className="text-sm font-medium text-gray-600">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Card className="p-4">
+            <div className="text-sm font-medium text-muted-foreground">
               Total Requests
             </div>
-            <div className="text-3xl font-bold text-gray-900 mt-2">
+            <div className="text-2xl font-bold text-foreground mt-2">
               {stats?.total_requests || 0}
             </div>
           </Card>
 
-          <Card className="p-6">
-            <div className="text-sm font-medium text-gray-600">
+          <Card className="p-4">
+            <div className="text-sm font-medium text-muted-foreground">
               Success Rate
             </div>
-            <div className="text-3xl font-bold text-gray-900 mt-2">
+            <div className="text-2xl font-bold text-foreground mt-2">
               {stats?.success_rate.toFixed(1) || 0}%
             </div>
           </Card>
 
-          <Card className="p-6">
-            <div className="text-sm font-medium text-gray-600">Total Cost</div>
-            <div className="text-3xl font-bold text-gray-900 mt-2">
+          <Card className="p-4">
+            <div className="text-sm font-medium text-muted-foreground">Total Cost</div>
+            <div className="text-2xl font-bold text-foreground mt-2">
               ${stats?.total_cost.toFixed(4) || "0.0000"}
             </div>
           </Card>
 
-          <Card className="p-6">
-            <div className="text-sm font-medium text-gray-600">Avg Latency</div>
-            <div className="text-3xl font-bold text-gray-900 mt-2">
+          <Card className="p-4">
+            <div className="text-sm font-medium text-muted-foreground">Avg Latency</div>
+            <div className="text-2xl font-bold text-foreground mt-2">
               {stats?.avg_latency_ms
                 ? `${(stats.avg_latency_ms / 1000).toFixed(2)}s`
                 : "0s"}
@@ -146,16 +169,57 @@ export default function ObservabilityPage() {
           </Card>
         </div>
 
+        {/* Execution Logs Tab Header */}
+        <div className="flex gap-2 border-b border-border">
+          <span className="px-4 py-2 font-medium text-sm border-b-2 border-foreground text-foreground">
+            Execution Logs
+          </span>
+        </div>
+
+        {/* Custom Data Filter */}
+        <div className="flex items-center gap-3">
+          <Input
+            placeholder="Custom data key"
+            value={filterKey}
+            onChange={(e) => setFilterKey(e.target.value)}
+            className="w-[180px]"
+            onKeyDown={(e) => e.key === "Enter" && handleApplyFilter()}
+          />
+          <Input
+            placeholder="Value"
+            value={filterValue}
+            onChange={(e) => setFilterValue(e.target.value)}
+            className="w-[180px]"
+            onKeyDown={(e) => e.key === "Enter" && handleApplyFilter()}
+          />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleApplyFilter}
+            disabled={!filterKey.trim() || !filterValue.trim()}
+          >
+            Apply
+          </Button>
+          {activeFilterKey && (
+            <Button variant="ghost" size="sm" onClick={handleClearFilter}>
+              Clear
+            </Button>
+          )}
+          {activeFilterKey && (
+            <span className="text-sm text-muted-foreground">
+              Filtering: <span className="font-mono">{activeFilterKey}</span> = <span className="font-mono">{activeFilterValue}</span>
+            </span>
+          )}
+        </div>
+
         {/* Logs Table */}
         <Card className="p-6">
-          <h2 className="text-lg font-semibold mb-4">Execution Logs</h2>
-
           {loading ? (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-muted-foreground">
               Loading logs...
             </div>
           ) : logs.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-muted-foreground">
               No execution logs found
             </div>
           ) : (
@@ -178,7 +242,7 @@ export default function ObservabilityPage() {
                     {logs.map((log) => (
                       <TableRow
                         key={log.id}
-                        className="cursor-pointer hover:bg-gray-50"
+                        className="cursor-pointer hover:bg-muted/50"
                       >
                         <TableCell className="text-sm">
                           {formatTimestamp(log.created_at)}
@@ -216,7 +280,7 @@ export default function ObservabilityPage() {
 
               {/* Pagination */}
               <div className="flex items-center justify-between mt-6">
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-muted-foreground">
                   Page {currentPage} of {totalPages}
                 </div>
                 <div className="flex gap-2">
@@ -257,23 +321,23 @@ export default function ObservabilityPage() {
                 <h3 className="font-semibold mb-3">Request Information</h3>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <span className="text-gray-600">Trace ID:</span>
+                    <span className="text-muted-foreground">Trace ID:</span>
                     <p className="font-mono text-xs mt-1">
                       {selectedLog.trace_id}
                     </p>
                   </div>
                   <div>
-                    <span className="text-gray-600">Function:</span>
+                    <span className="text-muted-foreground">Function:</span>
                     <p className="mt-1">{selectedLog.function_name || "-"}</p>
                   </div>
                   <div>
-                    <span className="text-gray-600">Status:</span>
+                    <span className="text-muted-foreground">Status:</span>
                     <div className="mt-1">
                       {getStatusBadge(selectedLog.status)}
                     </div>
                   </div>
                   <div>
-                    <span className="text-gray-600">Started At:</span>
+                    <span className="text-muted-foreground">Started At:</span>
                     <p className="mt-1">
                       {formatTimestamp(selectedLog.started_at)}
                     </p>
@@ -286,41 +350,41 @@ export default function ObservabilityPage() {
                 <h3 className="font-semibold mb-3">Metrics</h3>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <span className="text-gray-600">Latency:</span>
+                    <span className="text-muted-foreground">Latency:</span>
                     <p className="mt-1">
                       {formatLatency(selectedLog.total_latency_ms)}
                     </p>
                   </div>
                   <div>
-                    <span className="text-gray-600">Input Tokens:</span>
+                    <span className="text-muted-foreground">Input Tokens:</span>
                     <p className="mt-1">{selectedLog.input_tokens || "-"}</p>
                   </div>
                   <div>
-                    <span className="text-gray-600">Output Tokens:</span>
+                    <span className="text-muted-foreground">Output Tokens:</span>
                     <p className="mt-1">{selectedLog.output_tokens || "-"}</p>
                   </div>
                   <div>
-                    <span className="text-gray-600">Total Tokens:</span>
+                    <span className="text-muted-foreground">Total Tokens:</span>
                     <p className="mt-1">{selectedLog.total_tokens || "-"}</p>
                   </div>
                   <div>
-                    <span className="text-gray-600">Input Cost:</span>
+                    <span className="text-muted-foreground">Input Cost:</span>
                     <p className="mt-1">{formatCost(selectedLog.input_cost)}</p>
                   </div>
                   <div>
-                    <span className="text-gray-600">Output Cost:</span>
+                    <span className="text-muted-foreground">Output Cost:</span>
                     <p className="mt-1">
                       {formatCost(selectedLog.output_cost)}
                     </p>
                   </div>
                   <div>
-                    <span className="text-gray-600">Total Cost:</span>
+                    <span className="text-muted-foreground">Total Cost:</span>
                     <p className="mt-1 font-semibold">
                       {formatCost(selectedLog.total_cost)}
                     </p>
                   </div>
                   <div>
-                    <span className="text-gray-600">Context Utilization:</span>
+                    <span className="text-muted-foreground">Context Utilization:</span>
                     <p className="mt-1">
                       {selectedLog.context_utilization !== null
                         ? `${selectedLog.context_utilization.toFixed(2)}%`
@@ -335,16 +399,16 @@ export default function ObservabilityPage() {
                 <h3 className="font-semibold mb-3">Content</h3>
                 {selectedLog.input && (
                   <div className="mb-4">
-                    <span className="text-sm text-gray-600">Input:</span>
-                    <p className="text-sm bg-gray-50 p-3 rounded mt-1 wrap-break-word">
+                    <span className="text-sm text-muted-foreground">Input:</span>
+                    <p className="text-sm bg-muted p-3 rounded mt-1 wrap-break-word">
                       {selectedLog.input}
                     </p>
                   </div>
                 )}
                 {selectedLog.output && (
                   <div>
-                    <span className="text-sm text-gray-600">Output:</span>
-                    <p className="text-sm bg-gray-50 p-3 rounded mt-1 wrap-break-word">
+                    <span className="text-sm text-muted-foreground">Output:</span>
+                    <p className="text-sm bg-muted p-3 rounded mt-1 wrap-break-word">
                       {selectedLog.output}
                     </p>
                   </div>
@@ -356,7 +420,7 @@ export default function ObservabilityPage() {
                 Object.keys(selectedLog.custom_data).length > 0 && (
                   <div>
                     <h3 className="font-semibold mb-3">Custom Data</h3>
-                    <pre className="text-xs bg-gray-50 p-3 rounded overflow-auto">
+                    <pre className="text-xs bg-muted p-3 rounded overflow-auto">
                       {JSON.stringify(selectedLog.custom_data, null, 2)}
                     </pre>
                   </div>
@@ -369,20 +433,20 @@ export default function ObservabilityPage() {
                   <h3 className="font-semibold mb-3">Security</h3>
                   {selectedLog.pii_detection && (
                     <div className="mb-3">
-                      <span className="text-sm text-gray-600">
+                      <span className="text-sm text-muted-foreground">
                         PII Detection:
                       </span>
-                      <pre className="text-xs bg-gray-50 p-2 rounded mt-1 overflow-auto">
+                      <pre className="text-xs bg-muted p-2 rounded mt-1 overflow-auto">
                         {JSON.stringify(selectedLog.pii_detection, null, 2)}
                       </pre>
                     </div>
                   )}
                   {selectedLog.content_moderation && (
                     <div>
-                      <span className="text-sm text-gray-600">
+                      <span className="text-sm text-muted-foreground">
                         Content Moderation:
                       </span>
-                      <pre className="text-xs bg-gray-50 p-2 rounded mt-1 overflow-auto">
+                      <pre className="text-xs bg-muted p-2 rounded mt-1 overflow-auto">
                         {JSON.stringify(
                           selectedLog.content_moderation,
                           null,
@@ -396,9 +460,9 @@ export default function ObservabilityPage() {
 
               {/* Error Info */}
               {selectedLog.error_message && (
-                <div className="bg-red-50 border border-red-200 rounded p-3">
-                  <span className="text-sm text-gray-600">Error:</span>
-                  <p className="text-sm text-red-700 mt-1">
+                <div className="bg-destructive/10 border border-destructive/20 rounded p-3">
+                  <span className="text-sm text-muted-foreground">Error:</span>
+                  <p className="text-sm text-destructive mt-1">
                     {selectedLog.error_message}
                   </p>
                 </div>

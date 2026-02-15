@@ -32,11 +32,11 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50">
+    <div className="flex items-center justify-center min-h-screen bg-background">
       <div className="w-full max-w-md">
-        <div className="bg-white rounded-lg shadow-md p-8">
+        <div className="rounded-lg border border-border bg-card p-8">
           <h1 className="text-3xl font-bold text-center mb-2">Magpie</h1>
-          <p className="text-gray-600 text-center mb-8">
+          <p className="text-muted-foreground text-center mb-8">
             Content Moderation & Observability Platform
           </p>
 
@@ -72,7 +72,7 @@ export default function LoginPage() {
             </div>
 
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+              <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded">
                 {error}
               </div>
             )}
@@ -82,11 +82,11 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          <p className="mt-6 text-center text-gray-600">
-            Don't have an account?{" "}
+          <p className="mt-6 text-center text-muted-foreground">
+            Don&apos;t have an account?{" "}
             <Link
               href="/signup"
-              className="font-medium text-blue-600 hover:underline"
+              className="font-medium text-foreground underline-offset-4 hover:underline"
             >
               Sign up
             </Link>

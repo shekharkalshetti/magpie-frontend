@@ -235,7 +235,7 @@ export default function SettingsPage() {
               </div>
             ) : (
               <div className="flex items-center gap-3">
-                <p className="text-gray-900 font-medium">{project.name}</p>
+                <p className="text-foreground font-medium">{project.name}</p>
                 <Button
                   size="sm"
                   variant="ghost"
@@ -257,7 +257,7 @@ export default function SettingsPage() {
       <Card className="p-6">
         <h2 className="text-lg font-semibold mb-2">Project ID</h2>
         <div className="flex items-center gap-3">
-          <code className="flex-1 bg-gray-50 px-3 py-2 rounded text-sm font-mono">
+          <code className="flex-1 bg-muted px-3 py-2 rounded text-sm font-mono">
             {projectId}
           </code>
           <Button
@@ -294,7 +294,7 @@ export default function SettingsPage() {
           {getCurrentApiKey() ? (
             <>
               <div className="flex items-center gap-3">
-                <code className="flex-1 bg-gray-50 px-3 py-2 rounded text-sm font-mono">
+                <code className="flex-1 bg-muted px-3 py-2 rounded text-sm font-mono">
                   {getCurrentApiKey()!.key_prefix}****************************
                 </code>
               </div>
@@ -323,15 +323,15 @@ export default function SettingsPage() {
           <p className="text-sm text-muted-foreground">
             Your API key is used to authenticate requests to the Magpie API
           </p>
-          <p className="text-xs text-yellow-600 bg-yellow-50 px-3 py-2 rounded">
-            ⚠️ Regenerating the API key will invalidate the current key
+          <p className="text-xs text-muted-foreground bg-muted border border-border px-3 py-2 rounded">
+            Regenerating the API key will invalidate the current key.
           </p>
         </div>
       </Card>
 
       {/* Danger Zone */}
-      <Card className="p-6 border-red-200 bg-red-50/30">
-        <h2 className="text-lg font-semibold mb-2 text-red-900 flex items-center gap-2">
+      <Card className="p-6 border-destructive/20 bg-destructive/5">
+        <h2 className="text-lg font-semibold mb-2 text-destructive flex items-center gap-2">
           <Trash2 className="h-5 w-5" />
           Danger Zone
         </h2>
@@ -447,7 +447,7 @@ export default function SettingsPage() {
             <div>
               <label className="text-sm font-medium">API Key:</label>
               <div className="flex items-center gap-2 mt-2">
-                <code className="flex-1 bg-gray-50 px-3 py-2 rounded text-sm font-mono break-all">
+                <code className="flex-1 bg-muted px-3 py-2 rounded text-sm font-mono break-all">
                   {newGeneratedKey?.api_key}
                 </code>
                 <Button size="sm" variant="outline" onClick={handleCopyApiKey}>
@@ -465,8 +465,8 @@ export default function SettingsPage() {
                 </Button>
               </div>
             </div>
-            <div className="bg-yellow-50 border border-yellow-200 rounded p-3">
-              <p className="text-sm text-yellow-800">
+            <div className="bg-muted border border-border rounded p-3">
+              <p className="text-sm text-muted-foreground">
                 <strong>Important:</strong> Make sure to copy your API key now.
                 You won't be able to see it again!
               </p>

@@ -96,16 +96,16 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50">
+    <div className="flex min-h-screen items-center justify-center bg-background">
       <div className="w-full max-w-md">
-        <div className="bg-white rounded-lg shadow-md p-8">
+        <div className="rounded-lg border border-border bg-card p-8">
           <h1 className="text-3xl font-bold text-center mb-2">Magpie</h1>
-          <p className="text-gray-600 text-center mb-8">
+          <p className="text-muted-foreground text-center mb-8">
             {inviteToken ? "Join your team" : "Create your account"}
           </p>
 
           {error && (
-            <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+            <div className="mb-4 bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded">
               {error}
             </div>
           )}
@@ -151,7 +151,7 @@ export default function SignupPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={isLoading}
               />
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-1 text-xs text-muted-foreground">
                 At least 8 characters
               </p>
             </div>
@@ -175,11 +175,11 @@ export default function SignupPage() {
             </Button>
           </form>
 
-          <p className="mt-6 text-center text-gray-600">
+          <p className="mt-6 text-center text-muted-foreground">
             Already have an account?{" "}
             <Link
               href="/login"
-              className="font-medium text-blue-600 hover:underline"
+              className="font-medium text-foreground underline-offset-4 hover:underline"
             >
               Log in
             </Link>

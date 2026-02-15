@@ -202,7 +202,7 @@ export default function TeamPage() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -218,7 +218,7 @@ export default function TeamPage() {
 
       {/* Error Message */}
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded text-sm">
+        <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded text-sm">
           <div className="font-medium">Error</div>
           <div className="text-sm opacity-90">{error}</div>
         </div>
@@ -295,7 +295,7 @@ export default function TeamPage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
                             onClick={() => {
                               setRemovingItemId(row.id);
                               setRemovingItemType(
@@ -357,7 +357,7 @@ export default function TeamPage() {
           <div className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 gap-2">
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              className="bg-red-600 hover:bg-red-700"
+              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
               onClick={handleRemove}
             >
               {removingItemType === "member" ? "Remove" : "Cancel Invitation"}

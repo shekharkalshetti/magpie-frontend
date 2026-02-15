@@ -2,8 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { Plus } from "lucide-react";
 import { ProtectedRoute } from "@/app/protected-route";
 import { useAuth } from "@/app/auth-context";
+import { Button } from "@/components/ui/button";
+import { CreateProjectDialog } from "@/components/create-project-dialog";
 
 interface Project {
   project_id: string;
@@ -16,6 +19,7 @@ function ProjectsContent() {
   const { token } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
     if (!token) {
@@ -54,37 +58,52 @@ function ProjectsContent() {
   if (isLoading) {
     return (
       <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
-        <div className="text-center">
-          <div className="mb-4 animate-spin text-4xl">⏳</div>
-          <p className="text-muted-foreground">Loading projects...</p>
-        </div>
+        <p className="text-muted-foreground">Loading projects...</p>
       </div>
     );
   }
 
   if (projects.length === 0) {
     return (
-      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
-        <div className="text-center">
-          <div className="mb-4 text-6xl">📦</div>
-          <h2 className="mb-2 text-2xl font-semibold">No projects yet</h2>
-          <p className="mb-6 text-muted-foreground">
-            Get started by creating your first project
-          </p>
+      <div className="px-8 py-8">
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">Projects</h1>
+            <p className="mt-1 text-muted-foreground">
+              Manage your content moderation projects
+            </p>
+          </div>
+          <Button onClick={() => setDialogOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Create Project
+          </Button>
         </div>
+        <div className="flex min-h-[calc(100vh-16rem)] items-center justify-center">
+          <div className="text-center">
+            <h2 className="mb-2 text-2xl font-semibold">No projects yet</h2>
+            <p className="text-muted-foreground">
+              Get started by creating your first project
+            </p>
+          </div>
+        </div>
+        <CreateProjectDialog open={dialogOpen} onOpenChange={setDialogOpen} />
       </div>
     );
   }
 
   return (
-    <div className="container py-8">
+    <div className="px-8 py-8">
       <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Projects</h1>
-          <p className="text-muted-foreground">
+          <p className="mt-1 text-muted-foreground">
             Manage your content moderation projects
           </p>
         </div>
+        <Button onClick={() => setDialogOpen(true)}>
+          <Plus className="mr-2 h-4 w-4" />
+          Create Project
+        </Button>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -108,6 +127,7 @@ function ProjectsContent() {
           </Link>
         ))}
       </div>
+      <CreateProjectDialog open={dialogOpen} onOpenChange={setDialogOpen} />
     </div>
   );
 }

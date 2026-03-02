@@ -309,15 +309,17 @@ export default function ObservabilityPage() {
 
       {/* Log Detail Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-6xl w-[95vw] max-h-[95vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Execution Log Details</DialogTitle>
           </DialogHeader>
 
           {selectedLog && (
             <div className="space-y-6">
+              {/* Request Info + Metrics side by side on desktop */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Request Info */}
-              <div>
+              <div className="bg-muted/50 rounded-lg p-4">
                 <h3 className="font-semibold mb-3">Request Information</h3>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
@@ -346,7 +348,7 @@ export default function ObservabilityPage() {
               </div>
 
               {/* Metrics */}
-              <div>
+              <div className="bg-muted/50 rounded-lg p-4">
                 <h3 className="font-semibold mb-3">Metrics</h3>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
@@ -393,24 +395,24 @@ export default function ObservabilityPage() {
                   </div>
                 </div>
               </div>
+              </div>
 
               {/* Input/Output */}
-              <div>
-                <h3 className="font-semibold mb-3">Content</h3>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {selectedLog.input && (
-                  <div className="mb-4">
-                    <span className="text-sm text-muted-foreground">Input:</span>
-                    <p className="text-sm bg-muted p-3 rounded mt-1 wrap-break-word">
+                  <div className="bg-muted/50 rounded-lg p-4">
+                    <h3 className="font-semibold mb-3">Input</h3>
+                    <div className="text-sm max-h-48 overflow-y-auto wrap-break-word">
                       {selectedLog.input}
-                    </p>
+                    </div>
                   </div>
                 )}
                 {selectedLog.output && (
-                  <div>
-                    <span className="text-sm text-muted-foreground">Output:</span>
-                    <p className="text-sm bg-muted p-3 rounded mt-1 wrap-break-word">
+                  <div className="bg-muted/50 rounded-lg p-4">
+                    <h3 className="font-semibold mb-3">Output</h3>
+                    <div className="text-sm max-h-48 overflow-y-auto wrap-break-word">
                       {selectedLog.output}
-                    </p>
+                    </div>
                   </div>
                 )}
               </div>
@@ -418,11 +420,18 @@ export default function ObservabilityPage() {
               {/* Custom Data */}
               {selectedLog.custom_data &&
                 Object.keys(selectedLog.custom_data).length > 0 && (
-                  <div>
+                  <div className="bg-muted/50 rounded-lg p-4">
                     <h3 className="font-semibold mb-3">Custom Data</h3>
-                    <pre className="text-xs bg-muted p-3 rounded overflow-auto">
-                      {JSON.stringify(selectedLog.custom_data, null, 2)}
-                    </pre>
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
+                      {Object.entries(selectedLog.custom_data).map(([key, value]) => (
+                        <div key={key}>
+                          <span className="text-muted-foreground">{key}:</span>
+                          <p className="mt-1 font-mono text-xs">
+                            {typeof value === "object" ? JSON.stringify(value) : String(value)}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
 
@@ -431,36 +440,80 @@ export default function ObservabilityPage() {
                 selectedLog.content_moderation) && (
                 <div>
                   <h3 className="font-semibold mb-3">Security</h3>
-                  {selectedLog.pii_detection && (
-                    <div className="mb-3">
-                      <span className="text-sm text-muted-foreground">
-                        PII Detection:
-                      </span>
-                      <pre className="text-xs bg-muted p-2 rounded mt-1 overflow-auto">
-                        {JSON.stringify(selectedLog.pii_detection, null, 2)}
-                      </pre>
-                    </div>
-                  )}
-                  {selectedLog.content_moderation && (
-                    <div>
-                      <span className="text-sm text-muted-foreground">
-                        Content Moderation:
-                      </span>
-                      <pre className="text-xs bg-muted p-2 rounded mt-1 overflow-auto">
-                        {JSON.stringify(
-                          selectedLog.content_moderation,
-                          null,
-                          2,
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    {selectedLog.pii_detection && (
+                      <div className="bg-muted/50 rounded-lg p-4 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium">PII Detection</span>
+                          <Badge variant={selectedLog.pii_detection.contains_pii ? "destructive" : "default"}>
+                            {selectedLog.pii_detection.contains_pii ? "PII Found" : "Clean"}
+                          </Badge>
+                        </div>
+                        {selectedLog.pii_detection.contains_pii && (
+                          <>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-xs text-muted-foreground">Types:</span>
+                              {(selectedLog.pii_detection.pii_types || []).map((type: string) => (
+                                <Badge key={type} variant="outline" className="text-xs">
+                                  {type}
+                                </Badge>
+                              ))}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-muted-foreground">Redacted:</span>
+                              <Badge variant={selectedLog.pii_detection.redacted ? "default" : "destructive"} className="text-xs">
+                                {selectedLog.pii_detection.redacted ? "Yes" : "No"}
+                              </Badge>
+                            </div>
+                          </>
                         )}
-                      </pre>
-                    </div>
-                  )}
+                        {selectedLog.pii_detection.error && selectedLog.pii_detection.contains_pii && (
+                          <p className="text-xs text-destructive">{selectedLog.pii_detection.error}</p>
+                        )}
+                      </div>
+                    )}
+                    {selectedLog.content_moderation && (
+                      <div className="bg-muted/50 rounded-lg p-4 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium">Content Moderation</span>
+                          <Badge variant={selectedLog.content_moderation.is_safe ? "default" : "destructive"}>
+                            {selectedLog.content_moderation.is_safe ? "Safe" : "Unsafe"}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-muted-foreground">Action:</span>
+                          <Badge
+                            variant={selectedLog.content_moderation.action === "allow" ? "outline" : "destructive"}
+                            className="text-xs"
+                          >
+                            {selectedLog.content_moderation.action}
+                          </Badge>
+                        </div>
+                        {selectedLog.content_moderation.violations &&
+                          selectedLog.content_moderation.violations.length > 0 && (
+                            <div>
+                              <span className="text-xs text-muted-foreground">Violations:</span>
+                              <ul className="mt-1 space-y-1">
+                                {selectedLog.content_moderation.violations.map((v: string, i: number) => (
+                                  <li key={i} className="text-xs text-destructive bg-destructive/10 px-2 py-1 rounded">
+                                    {typeof v === "object" ? JSON.stringify(v) : v}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        {selectedLog.content_moderation.error && (
+                          <p className="text-xs text-destructive">{selectedLog.content_moderation.error}</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 
               {/* Schema Guard */}
               {selectedLog.schema_validation && (
-                <div>
+                <div className="bg-muted/50 rounded-lg p-4">
                   <h3 className="font-semibold mb-3">Schema Guard</h3>
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">

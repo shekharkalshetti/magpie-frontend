@@ -176,6 +176,8 @@ export default function SettingsPage() {
     return activeKey;
   };
 
+  const currentApiKey = getCurrentApiKey();
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -241,6 +243,7 @@ export default function SettingsPage() {
                   variant="ghost"
                   onClick={handleEditName}
                   className="h-8 w-8 p-0"
+                  aria-label="Edit project name"
                 >
                   <Edit2 className="h-4 w-4" />
                 </Button>
@@ -291,11 +294,11 @@ export default function SettingsPage() {
           API Key
         </h2>
         <div className="space-y-3">
-          {getCurrentApiKey() ? (
+          {currentApiKey ? (
             <>
               <div className="flex items-center gap-3">
                 <code className="flex-1 bg-muted px-3 py-2 rounded text-sm font-mono">
-                  {getCurrentApiKey()!.key_prefix}****************************
+                  {currentApiKey!.key_prefix}****************************
                 </code>
               </div>
               <Button
@@ -403,10 +406,10 @@ export default function SettingsPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {getCurrentApiKey() ? "Regenerate" : "Generate"} API Key
+              {currentApiKey ? "Regenerate" : "Generate"} API Key
             </DialogTitle>
             <DialogDescription>
-              {getCurrentApiKey()
+              {currentApiKey
                 ? "This will invalidate your current API key. Any applications using the old key will stop working immediately."
                 : "Generate a new API key for this project. You'll need this key to authenticate SDK requests."}
             </DialogDescription>
@@ -419,13 +422,13 @@ export default function SettingsPage() {
               Cancel
             </Button>
             <Button
-              variant={getCurrentApiKey() ? "destructive" : "default"}
+              variant={currentApiKey ? "destructive" : "default"}
               onClick={handleRegenerateApiKey}
               disabled={isRegenerating}
             >
               {isRegenerating
                 ? "Generating..."
-                : getCurrentApiKey()
+                : currentApiKey
                   ? "Regenerate Key"
                   : "Generate Key"}
             </Button>

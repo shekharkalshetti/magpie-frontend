@@ -1,59 +1,34 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { ProtectedRoute } from "@/app/protected-route";
-import { useAuth } from "@/app/auth-context";
 import { Button } from "@/components/ui/button";
 import { CreateProjectDialog } from "@/components/create-project-dialog";
-
-interface Project {
-  project_id: string;
-  name: string;
-  description: string;
-  created_at: string;
-}
+import { getProjects, type Project } from "@/lib/api";
 
 function ProjectsContent() {
-  const { token } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  useEffect(() => {
-    if (!token) {
+  const fetchProjects = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const data = await getProjects();
+      setProjects(data);
+    } catch (error) {
+      console.error("Error fetching projects:", error);
+      setProjects([]);
+    } finally {
       setIsLoading(false);
-      return;
     }
+  }, []);
 
-    const fetchProjects = async () => {
-      try {
-        const response = await fetch("http://localhost:8000/api/v1/projects", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (!response.ok) {
-          console.error("Failed to fetch projects:", response.status);
-          setProjects([]);
-          return;
-        }
-
-        const data = await response.json();
-        setProjects(data);
-      } catch (error) {
-        console.error("Error fetching projects:", error);
-        setProjects([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
+  useEffect(() => {
     fetchProjects();
-  }, [token]);
+  }, [fetchProjects]);
 
   if (isLoading) {
     return (
@@ -86,7 +61,11 @@ function ProjectsContent() {
             </p>
           </div>
         </div>
-        <CreateProjectDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+        <CreateProjectDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          onSuccess={fetchProjects}
+        />
       </div>
     );
   }
@@ -127,7 +106,11 @@ function ProjectsContent() {
           </Link>
         ))}
       </div>
-      <CreateProjectDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+      <CreateProjectDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        onSuccess={fetchProjects}
+      />
     </div>
   );
 }

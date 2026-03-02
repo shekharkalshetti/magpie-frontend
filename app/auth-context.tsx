@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
+import { loginWithCredentials } from "@/lib/api";
 
 interface User {
   id: string;
@@ -15,6 +16,7 @@ interface AuthContextType {
   token: string | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
+  setSession: (token: string, user: User) => void;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -32,37 +34,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const storedUser = localStorage.getItem("auth_user");
 
     if (storedToken && storedUser) {
-      setToken(storedToken);
-      setUser(JSON.parse(storedUser));
+      try {
+        setToken(storedToken);
+        setUser(JSON.parse(storedUser));
+      } catch {
+        localStorage.removeItem("auth_token");
+        localStorage.removeItem("auth_user");
+      }
     }
 
     setIsLoading(false);
   }, []);
 
+  const setSession = (newToken: string, newUser: User) => {
+    setToken(newToken);
+    setUser(newUser);
+    localStorage.setItem("auth_token", newToken);
+    localStorage.setItem("auth_user", JSON.stringify(newUser));
+  };
+
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      const response = await fetch("http://localhost:8000/api/v1/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.detail || "Login failed");
-      }
-
-      const data = await response.json();
-      const newToken = data.access_token;
-      const newUser = data.user;
-
-      setToken(newToken);
-      setUser(newUser);
-
-      // Store in localStorage
-      localStorage.setItem("auth_token", newToken);
-      localStorage.setItem("auth_user", JSON.stringify(newUser));
+      const data = await loginWithCredentials(email, password);
+      setSession(data.access_token, data.user);
     } catch (error) {
       console.error("Login error:", error);
       throw error;
@@ -85,6 +80,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         token,
         isLoading,
         login,
+        setSession,
         logout,
         isAuthenticated: !!token,
       }}

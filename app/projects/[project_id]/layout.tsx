@@ -5,13 +5,7 @@ import { usePathname, useParams } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
-import { useAuth } from "@/app/auth-context";
-
-interface Project {
-  project_id: string;
-  name: string;
-  description: string | null;
-}
+import { getProject, type Project } from "@/lib/api";
 
 const navigation = [
   { name: "Dashboard", href: "dashboard" },
@@ -31,32 +25,20 @@ export default function ProjectLayout({
   const pathname = usePathname();
   const params = useParams();
   const projectId = params.project_id as string;
-  const { token } = useAuth();
   const [project, setProject] = useState<Project | null>(null);
 
   useEffect(() => {
     async function fetchProject() {
-      if (!projectId || !token) return;
+      if (!projectId) return;
       try {
-        const response = await fetch(
-          `http://localhost:8000/api/v1/projects/${projectId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        if (response.ok) {
-          const data = await response.json();
-          setProject(data);
-        }
+        const data = await getProject(projectId);
+        setProject(data);
       } catch (error) {
         console.error("Error fetching project:", error);
       }
     }
     fetchProject();
-  }, [projectId, token]);
+  }, [projectId]);
 
   return (
     <div className="flex h-[calc(100vh-4rem)]">

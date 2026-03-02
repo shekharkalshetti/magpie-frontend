@@ -39,7 +39,7 @@ export default function DashboardPage() {
     try {
       setLoading(true);
       const [obs, review, activity] = await Promise.all([
-        getObservabilityStats(projectId, ""),
+        getObservabilityStats(projectId),
         getReviewQueueStats(projectId),
         getAuditLogs(projectId, 0, 5),
       ]);

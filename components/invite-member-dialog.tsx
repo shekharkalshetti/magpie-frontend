@@ -92,7 +92,7 @@ export function InviteMemberDialog({
             <label className="text-sm font-medium">Role</label>
             <Select
               value={role}
-              onValueChange={(value) => setRole(value as any)}
+              onValueChange={(value) => setRole(value as "admin" | "member" | "viewer")}
               disabled={isLoading}
             >
               <SelectTrigger>
@@ -107,7 +107,7 @@ export function InviteMemberDialog({
           </div>
 
           {error && (
-            <div className="text-sm text-red-500 bg-red-50 p-2 rounded">
+            <div className="text-sm text-destructive bg-destructive/10 p-2 rounded">
               {error}
             </div>
           )}

@@ -171,28 +171,6 @@ export default function TeamPage() {
     loadData();
   }, [projectId]);
 
-  const handleRemoveMember = async (userId: string) => {
-    try {
-      await removeMember(projectId, userId);
-      setRemovingItemId(null);
-      await loadData();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to remove member");
-    }
-  };
-
-  const handleCancelInvitation = async (invitationId: string) => {
-    try {
-      await cancelInvitation(projectId, invitationId);
-      setRemovingItemId(null);
-      await loadData();
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to cancel invitation"
-      );
-    }
-  };
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">

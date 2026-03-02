@@ -1,17 +1,26 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/app/auth-context";
+import { signupUser } from "@/lib/api";
 
 export default function SignupPage() {
+  return (
+    <Suspense>
+      <SignupContent />
+    </Suspense>
+  );
+}
+
+function SignupContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { login } = useAuth();
+  const { setSession } = useAuth();
   const inviteToken = searchParams.get("token");
 
   const [email, setEmail] = useState("");
@@ -51,37 +60,15 @@ export default function SignupPage() {
     setIsLoading(true);
 
     try {
-      const signupData: any = {
+      const data = await signupUser({
         email,
         full_name: fullName,
         password,
-      };
-
-      // Add invitation token if present
-      if (inviteToken) {
-        signupData.invite_token = inviteToken;
-      }
-
-      const response = await fetch("http://localhost:8000/api/v1/auth/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(signupData),
+        invite_token: inviteToken || undefined,
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || "Signup failed");
-      }
-
-      const data = await response.json();
-      const token = data.access_token;
-
-      // Store token and user in localStorage
-      localStorage.setItem("auth_token", token);
-      localStorage.setItem("auth_user", JSON.stringify(data.user));
-
-      // Use auth context to update state
-      await login(email, password);
+      // Set session directly — no redundant login call
+      setSession(data.access_token, data.user);
 
       // Redirect to projects
       router.push("/projects");

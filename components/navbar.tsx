@@ -11,7 +11,7 @@ export function Navbar() {
   const { isAuthenticated, user, logout } = useAuth();
 
   // Don't show navbar on login page
-  if (pathname === "/login") {
+  if (pathname === "/login" || pathname === "/signup") {
     return null;
   }
 
@@ -28,7 +28,7 @@ export function Navbar() {
         </div>
         {isAuthenticated && (
           <div className="ml-auto flex items-center gap-4">
-            <span className="text-sm text-gray-600">{user?.email}</span>
+            <span className="text-sm text-muted-foreground">{user?.email}</span>
             <Button variant="outline" size="sm" onClick={handleLogout}>
               <LogOut className="mr-2 h-4 w-4" />
               Logout

@@ -54,10 +54,9 @@ export default function ObservabilityPage() {
     try {
       setLoading(true);
       const [statsData, logsData] = await Promise.all([
-        getObservabilityStats(projectId, ""),
+        getObservabilityStats(projectId),
         getExecutionLogs(
           projectId,
-          "",
           (currentPage - 1) * logsPerPage,
           logsPerPage,
           activeFilterKey || undefined,

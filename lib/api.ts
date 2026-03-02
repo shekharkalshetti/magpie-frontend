@@ -29,6 +29,12 @@ async function apiFetch<T>(url: string, options: RequestInit = {}): Promise<T> {
   });
 
   if (!response.ok) {
+    // Auto-logout on 401 (expired/invalid token)
+    if (response.status === 401 && typeof window !== "undefined") {
+      localStorage.removeItem("auth_token");
+      localStorage.removeItem("auth_user");
+      window.location.href = "/login";
+    }
     const error = await response
       .json()
       .catch(() => ({ detail: "Unknown error" }));
@@ -121,16 +127,6 @@ export class ApiError extends Error {
     this.status = status;
     this.detail = detail;
   }
-}
-
-async function handleResponse<T>(response: Response): Promise<T> {
-  if (!response.ok) {
-    const error = await response
-      .json()
-      .catch(() => ({ detail: "Unknown error" }));
-    throw new ApiError(response.status, error.detail || "Request failed");
-  }
-  return response.json();
 }
 
 // ============================================================================
@@ -239,7 +235,7 @@ export async function resetPolicy(policyId: string): Promise<Policy> {
 // ============================================================================
 
 export interface Project {
-  id: string;
+  project_id: string;
   name: string;
   description: string | null;
   created_at: string;
@@ -248,6 +244,16 @@ export interface Project {
 
 export async function getProjects(): Promise<Project[]> {
   return apiFetch(`${API_BASE_URL}/api/v1/projects`);
+}
+
+export async function createProject(data: {
+  name: string;
+  description?: string;
+}): Promise<Project> {
+  return apiFetch(`${API_BASE_URL}/api/v1/projects`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
 }
 
 export async function getProject(projectId: string): Promise<Project> {
@@ -358,7 +364,6 @@ export interface ObservabilityStats {
 
 export async function getObservabilityStats(
   projectId: string,
-  apiKey: string,
 ): Promise<ObservabilityStats> {
   const params = new URLSearchParams();
   if (projectId) {
@@ -373,7 +378,6 @@ export async function getObservabilityStats(
 
 export async function getExecutionLogs(
   projectId: string,
-  apiKey: string,
   skip: number = 0,
   limit: number = 10,
   customKey?: string,
@@ -639,4 +643,61 @@ export async function cancelInvitation(
       method: "DELETE",
     },
   );
+}
+
+// ============================================================================
+// Auth API
+// ============================================================================
+
+export interface AuthResponse {
+  access_token: string;
+  user: {
+    id: string;
+    email: string;
+    full_name: string;
+    is_active: boolean;
+    created_at: string;
+  };
+}
+
+export async function loginWithCredentials(
+  email: string,
+  password: string,
+): Promise<AuthResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  });
+
+  if (!response.ok) {
+    const error = await response
+      .json()
+      .catch(() => ({ detail: "Login failed" }));
+    throw new ApiError(response.status, error.detail || "Login failed");
+  }
+
+  return response.json();
+}
+
+export async function signupUser(data: {
+  email: string;
+  full_name: string;
+  password: string;
+  invite_token?: string;
+}): Promise<AuthResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/auth/signup`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const error = await response
+      .json()
+      .catch(() => ({ detail: "Signup failed" }));
+    throw new ApiError(response.status, error.detail || "Signup failed");
+  }
+
+  return response.json();
 }

@@ -12,53 +12,45 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { useAuth } from "@/app/auth-context";
+import { createProject } from "@/lib/api";
 
 interface CreateProjectDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSuccess?: () => void;
 }
 
 export function CreateProjectDialog({
   open,
   onOpenChange,
+  onSuccess,
 }: CreateProjectDialogProps) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { token } = useAuth();
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError(null);
 
     try {
-      const response = await fetch("http://localhost:8000/api/v1/projects", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          name,
-          description,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to create project");
-      }
+      await createProject({ name, description: description || undefined });
 
       // Reset form and close dialog
       setName("");
       setDescription("");
       onOpenChange(false);
 
-      // Refresh the page to show the new project
-      window.location.reload();
-    } catch (error) {
-      console.error("Error creating project:", error);
-      alert("Failed to create project. Please try again.");
+      // Notify parent to refresh
+      if (onSuccess) {
+        onSuccess();
+      }
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to create project";
+      setError(message);
     } finally {
       setIsLoading(false);
     }
@@ -95,6 +87,11 @@ export function CreateProjectDialog({
               rows={3}
             />
           </div>
+          {error && (
+            <div className="text-sm text-destructive bg-destructive/10 p-2 rounded">
+              {error}
+            </div>
+          )}
           <div className="flex justify-end gap-2">
             <Button
               type="button"

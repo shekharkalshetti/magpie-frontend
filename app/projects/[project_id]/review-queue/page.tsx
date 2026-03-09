@@ -313,6 +313,22 @@ export default function ReviewQueuePage() {
                 </div>
               </div>
 
+              {/* Custom Data (accountability) */}
+              {selectedItem.custom_data &&
+                Object.keys(selectedItem.custom_data).length > 0 && (
+                  <div className="bg-muted/50 rounded-lg p-4">
+                    <h3 className="text-sm font-medium text-muted-foreground mb-2">Custom Data</h3>
+                    <div className="flex flex-wrap gap-x-6 gap-y-2">
+                      {Object.entries(selectedItem.custom_data).map(([key, value]) => (
+                        <div key={key} className="text-sm">
+                          <span className="text-muted-foreground">{key}:</span>{" "}
+                          <span className="font-medium">{String(value)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
               {/* Violations */}
               {selectedItem.violation_reasons &&
                 Object.keys(selectedItem.violation_reasons).length > 0 && (
